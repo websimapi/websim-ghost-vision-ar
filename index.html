@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ghost Vision AR</title>
+    <script src="https://aframe.io/releases/1.4.0/aframe.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/AR-js-org/AR.js@3.4.5/aframe/build/aframe-ar.min.js"></script>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div id="loading-screen">
+        <div class="loading-content">
+            <div class="ghost-icon">👻</div>
+            <h1>Ghost Vision</h1>
+            <p>Initializing spectral detection...</p>
+            <div class="loading-bar">
+                <div class="loading-progress"></div>
+            </div>
+        </div>
+    </div>
+
+    <div id="permission-screen" class="hidden">
+        <div class="permission-content">
+            <div class="ghost-icon">👻</div>
+            <h2>Enable Ghost Detection</h2>
+            <p>Grant camera and location access to detect supernatural entities in your environment.</p>
+            <button id="grant-permissions">Enable Detection</button>
+        </div>
+    </div>
+
+    <div id="app" class="hidden">
+        <a-scene
+            embedded
+            arjs="sourceType: webcam; debugUIEnabled: false; detectionMode: mono_and_matrix; matrixCodeType: 3x3;"
+            vr-mode-ui="enabled: false"
+            device-orientation-permission-ui="enabled: false">
+            
+            <a-camera
+                id="camera"
+                gps-camera
+                rotation-reader>
+            </a-camera>
+
+            <a-entity id="ghost-container"></a-entity>
+        </a-scene>
+
+        <div id="ui-overlay">
+            <div id="status-bar">
+                <div id="ghost-count">Ghosts Detected: <span>0</span></div>
+                <div id="scanning-indicator" class="hidden">
+                    <div class="pulse"></div>
+                    <span>Scanning...</span>
+                </div>
+            </div>
+            
+            <div id="ghost-alert" class="hidden">
+                <div class="alert-content">
+                    <div class="ghost-emoji">👻</div>
+                    <div class="alert-text">Supernatural presence detected!</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <canvas id="capture-canvas" class="hidden"></canvas>
+
+    <script type="importmap">
+    {
+        "imports": {
+            "three": "https://unpkg.com/three@0.158.0/build/three.module.js"
+        }
+    }
+    </script>
+    <script src="ghost-manager.js"></script>
+    <script src="ar-renderer.js"></script>
+    <script src="app.js"></script>
+<script defer src="https://static.cloudflareinsights.com/beacon.min.js/v8c78df7c7c0f484497ecbca7046644da1771523124516" integrity="sha512-8DS7rgIrAmghBFwoOTujcf6D9rXvH8xm8JQ1Ja01h9QX8EzXldiszufYa4IFfKdLUKTTrnSFXLDkUEOTrZQ8Qg==" data-cf-beacon='{"version":"2024.11.0","token":"4c6229722a6346bc8eb5cb0e5eae5d41","server_timing":{"name":{"cfCacheStatus":true,"cfEdge":true,"cfExtPri":true,"cfL4":true,"cfOrigin":true,"cfSpeedBrain":true},"location_startswith":null}}' crossorigin="anonymous"></script>
+</body>
+</html>
+
