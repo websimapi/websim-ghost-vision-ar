@@ -13,7 +13,14 @@ class GhostVisionApp {
 
     async init() {
         await this.showLoadingScreen();
-        this.showPermissionScreen();
+        
+        // Check if permissions are already granted
+        const hasPermissions = await this.checkPermissions();
+        
+        if (!hasPermissions) {
+            this.showPermissionScreen();
+        }
+        
         this.setupEventListeners();
         
         // Initialize managers
@@ -42,6 +49,12 @@ class GhostVisionApp {
 
     async requestPermissions() {
         try {
+            // Check if permissions are already granted
+            if (this.permissions.camera && this.permissions.location) {
+                this.startApp();
+                return;
+            }
+
             // Request camera permission
             const stream = await navigator.mediaDevices.getUserMedia({ 
                 video: { 
@@ -55,23 +68,66 @@ class GhostVisionApp {
 
             // Request location permission
             if ('geolocation' in navigator) {
-                navigator.geolocation.getCurrentPosition(
-                    (position) => {
-                        this.permissions.location = true;
-                        this.startApp();
-                    },
-                    (error) => {
-                        console.warn('Location permission denied, using fallback');
-                        this.startApp();
-                    }
-                );
+                try {
+                    const position = await new Promise((resolve, reject) => {
+                        navigator.geolocation.getCurrentPosition(resolve, reject, {
+                            timeout: 5000,
+                            enableHighAccuracy: false
+                        });
+                    });
+                    this.permissions.location = true;
+                    this.startApp();
+                } catch (error) {
+                    console.warn('Location permission denied, continuing without location:', error);
+                    this.permissions.location = false;
+                    this.startApp();
+                }
             } else {
+                console.warn('Geolocation not supported');
                 this.startApp();
             }
         } catch (error) {
-            console.error('Permission denied:', error);
-            alert('Camera access is required for ghost detection!');
+            console.error('Camera permission denied:', error);
+            // Try to proceed anyway for testing
+            if (error.name === 'NotAllowedError') {
+                alert('Camera access was denied. Some features may not work properly.');
+            } else {
+                alert('Error accessing camera: ' + error.message);
+            }
+            // Still try to start the app for demo purposes
+            this.startApp();
         }
+    }
+
+    async checkPermissions() {
+        try {
+            // Check camera permission
+            const permissions = await navigator.permissions.query({ name: 'camera' });
+            if (permissions.state === 'granted') {
+                this.permissions.camera = true;
+            }
+        } catch (error) {
+            console.log('Permission query not supported, will request directly');
+        }
+
+        try {
+            // Check location permission
+            const locationPermission = await navigator.permissions.query({ name: 'geolocation' });
+            if (locationPermission.state === 'granted') {
+                this.permissions.location = true;
+            }
+        } catch (error) {
+            console.log('Location permission query not supported');
+        }
+
+        // If both permissions are already granted, skip permission screen
+        if (this.permissions.camera && this.permissions.location) {
+            document.getElementById('permission-screen').classList.add('hidden');
+            this.startApp();
+            return true;
+        }
+        
+        return false;
     }
 
     startApp() {
@@ -342,4 +398,3 @@ Respond with JSON following this schema:
 document.addEventListener('DOMContentLoaded', () => {
     new GhostVisionApp();
 });
-
