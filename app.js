@@ -14,6 +14,10 @@ class GhostVisionApp {
     async init() {
         await this.showLoadingScreen();
         
+        // Initialize managers first
+        window.ghostManager = new GhostManager();
+        window.arRenderer = new ARRenderer();
+        
         // Check if permissions are already granted
         const hasPermissions = await this.checkPermissions();
         
@@ -22,10 +26,6 @@ class GhostVisionApp {
         }
         
         this.setupEventListeners();
-        
-        // Initialize managers
-        window.ghostManager = new GhostManager();
-        window.arRenderer = new ARRenderer();
     }
 
     async showLoadingScreen() {
